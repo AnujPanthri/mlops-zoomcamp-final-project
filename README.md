@@ -10,7 +10,8 @@ So given the informations from the different sensors found in an smoke detector 
 - [X] initial experiment notebook
 - [X] setup environment(using pipenv)
 - [X] making scripts for training
-- [ ] setup pre-commit hooks
+- [X] setup pre-commit hooks
+- [X] add Makefile
 - [ ] using mlflow to track the training experiments and for Model Registry
 - [ ] using workflow orchestrator(Prefect) to manage the training pipeline
 - [ ] model deployment

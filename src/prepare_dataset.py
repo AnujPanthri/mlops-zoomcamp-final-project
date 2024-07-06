@@ -1,7 +1,7 @@
 import os
 import shutil
+from typing import Tuple, Optional
 from pathlib import Path
-from typing import List, Optional, Tuple
 from zipfile import ZipFile
 
 import numpy as np
@@ -19,7 +19,8 @@ def unzip_dataset():
             (
                 f"{ZIP_PATH} missing. "
                 "Download it from "
-                "kaggle link: https://www.kaggle.com/datasets/deepcontractor/smoke-detection-dataset"
+                "kaggle link: "
+                "https://www.kaggle.com/datasets/deepcontractor/smoke-detection-dataset"
             )
         )
 

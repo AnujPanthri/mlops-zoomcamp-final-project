@@ -1,16 +1,15 @@
 import os
 import pickle
 import shutil
+from typing import Dict, List, Tuple, Union, Optional
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
-
 from sklearn.base import BaseEstimator
 from sklearn.linear_model import LogisticRegression
 
-from src.prepare_dataset import prepare_data, read_dataset, split_data
+from src.prepare_dataset import split_data, prepare_data, read_dataset
 
 MODEL_DIR = Path("artifacts/model/")
 
