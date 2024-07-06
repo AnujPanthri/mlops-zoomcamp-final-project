@@ -8,7 +8,8 @@ So given the informations from the different sensors found in an smoke detector 
 ## Parts
 
 - [X] initial experiment notebook
-- [ ] making scripts for training
+- [X] making scripts for training
+- [ ] setup pre-commit hooks
 - [ ] using mlflow to track the training experiments and for Model Registry
 - [ ] using workflow orchestrator(Prefect) to manage the training pipeline
 - [ ] model deployment
