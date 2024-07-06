@@ -17,3 +17,12 @@ So given the informations from the different sensors found in an smoke detector 
 - [ ] model monitoring
 - [ ] using terraform for provisioning the cloud infrastructure involved in this project
 - [ ] writing unit tests and integration tests
+
+
+## Setup for Contribution
+
+```bash
+pipenv install
+pipenv shell
+pre-commit install
+```
