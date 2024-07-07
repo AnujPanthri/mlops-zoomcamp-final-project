@@ -1,0 +1,42 @@
+networks:
+  common-network:
+
+services:
+  localstack:
+    image: localstack/localstack
+    ports:
+      - 4566:4566
+    environment:
+      - SERVICES=s3,sts,iam
+    networks:
+      - common-network
+
+  db:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_USER=normal_user
+      - POSTGRES_DB=test
+    networks:
+      - common-network
+
+  mlflow:
+    depends_on:
+      - db
+    build: ./mlflow
+    ports:
+      - 5000:5000
+    networks:
+      - common-network
+    environment:
+      - AWS_REGION=us-east-1
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - MLFLOW_S3_ENDPOINT_URL=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=access_key_id
+      - AWS_SECRET_ACCESS_KEY=secret_access_key
+      - MLFLOW_TRACKING_URI=postgresql+psycog2://normal_user:test@db:5432/mlflow_db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=${S3_BUCKET_URL}/mlflow-artifacts
+
+    command: mlflow server --host 0.0.0.0 --port 5000

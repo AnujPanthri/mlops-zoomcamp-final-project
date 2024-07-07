@@ -11,6 +11,10 @@ black = "*"
 isort = "*"
 pylint = "*"
 pre-commit = "*"
+terraform-local = "*"
+python-hcl2 = "*"
+mlflow = "*"
+boto3 = "*"
 
 [dev-packages]
 

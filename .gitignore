@@ -1,4 +1,6 @@
-dataset/extracted
 .ipynb_checkpoints/
 __pycache__/
+.terraform/
+
+dataset/extracted
 artifacts/

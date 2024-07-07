@@ -12,11 +12,11 @@ So given the informations from the different sensors found in an smoke detector 
 - [X] making scripts for training
 - [X] setup pre-commit hooks
 - [X] add Makefile
+- [X] using terraform for provisioning the cloud infrastructure(s3 bucket) involved in this project
 - [ ] using mlflow to track the training experiments and for Model Registry
 - [ ] using workflow orchestrator(Prefect) to manage the training pipeline
 - [ ] model deployment
 - [ ] model monitoring
-- [ ] using terraform for provisioning the cloud infrastructure involved in this project
 - [ ] writing unit tests and integration tests
 
 
@@ -26,4 +26,14 @@ So given the informations from the different sensors found in an smoke detector 
 pipenv install
 pipenv shell
 pre-commit install
+```
+
+## Setup for infrastructure
+
+I am using tflocal which is an wrapper for terraform which allows us to run terraform locally with localstack.
+
+```bash
+tflocal init
+tflocal plan
+tflocal apply
 ```
