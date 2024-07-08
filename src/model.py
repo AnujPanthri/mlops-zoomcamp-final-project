@@ -9,9 +9,12 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.linear_model import LogisticRegression
 
+import mlflow
+from constants import MODEL_DIR, MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT_NAME
 from src.prepare_dataset import split_data, prepare_data, read_dataset
 
-MODEL_DIR = Path("artifacts/model/")
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
 
 
 class Model:
@@ -94,32 +97,46 @@ class Model:
 
 def model_training_pipeline():
     print("\nRunning model training pipeline:")
+    # mlflow.autolog(True)
+    with mlflow.start_run():
 
-    target = "Fire Alarm"
-    numeric_cols = ["Temperature[C]", "Humidity[%]"]
-    seed = 565
+        target = "Fire Alarm"
+        numeric_cols = ["Temperature[C]", "Humidity[%]"]
+        seed = 565
 
-    df = read_dataset()
+        mlflow.log_param("seed", seed)
+        mlflow.log_param("numeric_cols", numeric_cols)
 
-    model = Model(numeric_cols=numeric_cols, target=target)
+        df = read_dataset()
 
-    X, y = prepare_data(df=df, numeric_cols=model.numeric_cols, target=model.target)
-    X_train, X_val, y_train, y_val = split_data(X, y, test_size=0.2, random_state=seed)
+        model = Model(numeric_cols=numeric_cols, target=target)
 
-    print("Training data shape(X,y):", X_train.shape, y_train.shape)
-    print("Validation data shape(X,y):", X_val.shape, y_val.shape)
+        X, y = prepare_data(df=df, numeric_cols=model.numeric_cols, target=model.target)
+        X_train, X_val, y_train, y_val = split_data(
+            X, y, test_size=0.2, random_state=seed
+        )
 
-    model.train_model(X_train, y_train)
+        print("Training data shape(X,y):", X_train.shape, y_train.shape)
+        print("Validation data shape(X,y):", X_val.shape, y_val.shape)
 
-    score = model.get_accuracy(X_train, y_train)
-    print(f"Training Accuracy: {score:.4f}")
+        mlflow.log_param("training data shapes", f"{X_train.shape, y_train.shape}")
+        mlflow.log_param("validation data shapes", f"{X_val.shape, y_val.shape}")
 
-    score = model.get_accuracy(X_val, y_val)
-    print(f"Validation Accuracy: {score:.4f}")
+        model.train_model(X_train, y_train)
 
-    print("Saving model artifacts")
-    model.save(MODEL_DIR)
-    print(f"Model artifacts saved to {MODEL_DIR}")
+        score = model.get_accuracy(X_train, y_train)
+        print(f"Training Accuracy: {score:.4f}")
+        mlflow.log_metric("train_acc", score)
+
+        score = model.get_accuracy(X_val, y_val)
+        print(f"Validation Accuracy: {score:.4f}")
+        mlflow.log_metric("val_acc", score)
+
+        print("Saving model artifacts")
+        model.save(MODEL_DIR)
+        print(f"Model artifacts saved to {MODEL_DIR}")
+
+        mlflow.log_artifacts(local_dir=MODEL_DIR, artifact_path="model")
 
 
 def evaluate_model_pipeline():

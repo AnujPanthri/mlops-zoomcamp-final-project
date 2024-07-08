@@ -13,7 +13,7 @@ So given the informations from the different sensors found in an smoke detector 
 - [X] setup pre-commit hooks
 - [X] add Makefile
 - [X] using terraform for provisioning the cloud infrastructure(s3 bucket) involved in this project
-- [ ] using mlflow to track the training experiments and for Model Registry
+- [X] using mlflow to track the training experiments and for Model Registry
 - [ ] using workflow orchestrator(Prefect) to manage the training pipeline
 - [ ] model deployment
 - [ ] model monitoring

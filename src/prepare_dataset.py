@@ -1,16 +1,13 @@
 import os
 import shutil
 from typing import Tuple, Optional
-from pathlib import Path
 from zipfile import ZipFile
 
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-ZIP_PATH = Path("dataset/smoke_detection_iot.csv.zip")
-EXTRACTED_DIR = Path("dataset/extracted/")
-FILE_PATH = EXTRACTED_DIR / "smoke_detection_iot.csv"
+from constants import ZIP_PATH, FILE_PATH, EXTRACTED_DIR
 
 
 def unzip_dataset():
