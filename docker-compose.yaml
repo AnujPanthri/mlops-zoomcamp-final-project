@@ -1,7 +1,10 @@
 networks:
   common-network:
-
+    driver: bridge
 services:
+  ####################################################
+  # infrastructure
+  ####################################################
   localstack:
     image: localstack/localstack
     ports:
@@ -18,14 +21,21 @@ services:
     environment:
       - POSTGRES_PASSWORD=secret
       - POSTGRES_USER=normal_user
-      - POSTGRES_DB=test
+      - POSTGRES_MULTIPLE_DATABASES= mlflow_db, prefect
     networks:
       - common-network
+    volumes:
+      - ./dockerfiles/postgres_multiple_db.sh:/docker-entrypoint-initdb.d/multiple-databases.sh
 
+  ####################################################
+  # Experiment Tracking with MLflow
+  ####################################################
   mlflow:
     depends_on:
       - db
-    build: ./mlflow
+    build:
+      context: ./dockerfiles
+      dockerfile: mlflow.dockerfile
     ports:
       - 5000:5000
     networks:
@@ -36,7 +46,26 @@ services:
       - MLFLOW_S3_ENDPOINT_URL=http://localstack:4566
       - AWS_ACCESS_KEY_ID=access_key_id
       - AWS_SECRET_ACCESS_KEY=secret_access_key
-      - MLFLOW_TRACKING_URI=postgresql+psycog2://normal_user:test@db:5432/mlflow_db
+      - MLFLOW_TRACKING_URI=postgresql+psycog2://mlflow_db:secret@db:5432/mlflow_db
       - MLFLOW_DEFAULT_ARTIFACT_ROOT=${S3_BUCKET_URL}/mlflow-artifacts
 
     command: mlflow server --host 0.0.0.0 --port 5000
+  ####################################################
+  # Orchestration with Prefect
+  ####################################################
+  prefect:
+    depends_on:
+      - db
+    build:
+      context: ./dockerfiles
+      dockerfile: prefect.dockerfile
+    ports:
+      - 4200:4200
+    networks:
+      - common-network
+
+    entrypoint:
+    command: bash -c "
+        prefect config set PREFECT_API_DATABASE_CONNECTION_URL="postgresql+asyncpg://prefect:secret@db:5432/prefect" &&
+        prefect server start --host 0.0.0.0 --port 4200
+      "

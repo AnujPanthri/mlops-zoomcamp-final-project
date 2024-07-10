@@ -37,3 +37,9 @@ tflocal init
 tflocal plan
 tflocal apply
 ```
+
+## Connect to prefect server
+
+```bash
+prefect config set PREFECT_API_URL="http://localhost:4200/api"
+```

@@ -1,6 +1,6 @@
+import mlflow
 from mlflow.tracking import MlflowClient
 
-import mlflow
 from constants import (
     MLFLOW_MODEL_NAME,
     MLFLOW_TRACKING_URI,

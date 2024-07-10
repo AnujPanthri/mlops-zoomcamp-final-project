@@ -4,6 +4,7 @@ disable = [
     "invalid-name",
     "missing-function-docstring",
     "missing-module-docstring",
+    "logging-fstring-interpolation",
 ]
 
 [tool.black]

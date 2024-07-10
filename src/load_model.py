@@ -4,10 +4,10 @@ import shutil
 
 import boto3
 import numpy as np
+import mlflow
 import pandas as pd
 from mlflow.client import MlflowClient
 
-import mlflow
 from constants import (
     MODEL_DIR,
     BUCKET_NAME,
