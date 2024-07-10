@@ -38,8 +38,16 @@ tflocal plan
 tflocal apply
 ```
 
+## Prefect
+
+- prefect work-pool create --type process local-pool
+- prefect worker start --pool local-pool
+- prefect deploy --all
+- prefect deployment run train_simple_flow/simple-model-training
 ## Connect to prefect server
 
 ```bash
 prefect config set PREFECT_API_URL="http://localhost:4200/api"
 ```
+
+##

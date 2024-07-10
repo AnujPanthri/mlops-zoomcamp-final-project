@@ -7,21 +7,27 @@ name: mlops-zoomcamp-final-project
 prefect-version: 2.19.7
 
 # build section allows you to manage and build docker images
-build: null
+build:
 
 # push section allows you to manage if and how this project is uploaded to remote locations
-push: null
+push:
 
 # pull section allows you to provide instructions for cloning this project in remote locations
 pull:
 - prefect.deployments.steps.git_clone:
-    repository: git@github.com:AnujPanthri/mlops-zoomcamp-final-project.git
+    repository: https://github.com/AnujPanthri/mlops-zoomcamp-final-project.git
     branch: main
-    access_token: null
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-- name: simple-model-training
-  entrypoint: src/flows/model_training.py:train_simple_flow
+- name: test
+  version:
+  tags: []
+  description:
+  entrypoint: src\flows\model_training.py:train_simple_flow
+  parameters: {}
   work_pool:
     name: local-pool
+    work_queue_name:
+    job_variables: {}
+  schedules: []
