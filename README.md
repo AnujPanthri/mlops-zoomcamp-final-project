@@ -43,7 +43,8 @@ tflocal apply
 - prefect work-pool create --type process local-pool
 - prefect worker start --pool local-pool
 - prefect deploy --all
-- prefect deployment run train_simple_flow/simple-model-training
+- prefect deployment run 'train-simple-flow/simple-model-training'
+
 ## Connect to prefect server
 
 ```bash

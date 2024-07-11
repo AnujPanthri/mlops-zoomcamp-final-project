@@ -10,15 +10,15 @@ quality_checks:
 	black .
 	pylint --recursive=y .
 
-start-infrastructure:
+start-infra:
 	docker compose up localstack --build -d
 
-create-infrastructure:
+create-infra:
 	cd infrastructure; \
 	tflocal init; \
 	tflocal apply -var-file="vars/local.tfvars";
 
-# destroy-infrastructure:
+# destroy-infra:
 # 	cd infrastructure; \
 # 	tflocal destroy;
 

@@ -20,12 +20,14 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-- name: test
+- name: simple-model-training
   version:
   tags: []
   description:
   entrypoint: src\flows\model_training.py:train_simple_flow
-  parameters: {}
+  parameters: {
+      "numeric_cols": ["Temperature[C]", "Humidity[%]"]
+    }
   work_pool:
     name: local-pool
     work_queue_name:

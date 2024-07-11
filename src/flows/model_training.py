@@ -47,10 +47,8 @@ def save_model_task(model, model_dir):
 
 
 @flow
-def train_simple_flow():
+def train_simple_flow(numeric_cols, seed=565):
     target = "Fire Alarm"
-    numeric_cols = ["Temperature[C]", "Humidity[%]"]
-    seed = 565
 
     logger = get_run_logger()
 
@@ -99,4 +97,10 @@ def train_simple_flow():
 
 
 if __name__ == "__main__":
-    train_simple_flow()
+    seed = 565
+    numeric_cols = ["Temperature[C]", "Humidity[%]"]
+
+    train_simple_flow(
+        numeric_cols=numeric_cols,
+        seed=seed,
+    )
