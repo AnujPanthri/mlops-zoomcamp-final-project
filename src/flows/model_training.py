@@ -55,7 +55,9 @@ def train_simple_flow(numeric_cols, seed=565):
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
 
-    with mlflow.start_run():
+    with mlflow.start_run() as curr_run:
+        logger.info(f"started mlflow run: {curr_run.info.run_name}")
+
         mlflow.log_param("seed", seed)
         mlflow.log_param("numeric_cols", numeric_cols)
 
@@ -101,8 +103,17 @@ def train_simple_flow(numeric_cols, seed=565):
 
 @flow
 def feature_selection_flow(numeric_cols_list: list):
-    for numeric_cols in numeric_cols_list:
+    logger = get_run_logger()
+    for i, numeric_cols in enumerate(numeric_cols_list):
         assert isinstance(numeric_cols, list)
+
+        logger.info(
+            (
+                f"{i+1}/{len(numeric_cols_list)} running "
+                f"training_flow with numeric_cols: {numeric_cols}"
+            )
+        )
+
         train_simple_flow(numeric_cols=numeric_cols)
 
 
