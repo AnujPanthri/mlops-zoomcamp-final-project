@@ -56,6 +56,9 @@ def train_simple_flow(numeric_cols, seed=565):
     mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
 
     with mlflow.start_run():
+        mlflow.log_param("seed", seed)
+        mlflow.log_param("numeric_cols", numeric_cols)
+
         df = read_dataset_task()
 
         X, y = prepare_dataset_task(
@@ -94,6 +97,13 @@ def train_simple_flow(numeric_cols, seed=565):
         logger.info(f"Model artifacts saved to {MODEL_DIR}")
 
         mlflow.log_artifacts(local_dir=MODEL_DIR, artifact_path="model")
+
+
+@flow
+def feature_selection_flow(numeric_cols_list: list):
+    for numeric_cols in numeric_cols_list:
+        assert isinstance(numeric_cols, list)
+        train_simple_flow(numeric_cols=numeric_cols)
 
 
 if __name__ == "__main__":
