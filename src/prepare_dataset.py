@@ -1,7 +1,7 @@
 import os
 import shutil
-from typing import Tuple, Optional
 from zipfile import ZipFile
+from typing import Tuple, Optional
 
 import numpy as np
 import pandas as pd

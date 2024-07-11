@@ -3,11 +3,12 @@ import re
 import shutil
 
 import boto3
-import numpy as np
 import mlflow
+import numpy as np
 import pandas as pd
 from mlflow.client import MlflowClient
 
+from src.model import Model
 from constants import (
     MODEL_DIR,
     BUCKET_NAME,
@@ -15,7 +16,6 @@ from constants import (
     MLFLOW_TRACKING_URI,
     MLFLOW_EXPERIMENT_NAME,
 )
-from src.model import Model
 
 s3 = boto3.resource("s3")
 client = MlflowClient(MLFLOW_TRACKING_URI)

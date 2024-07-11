@@ -1,17 +1,17 @@
 import os
 import pickle
 import shutil
-from typing import Dict, List, Tuple, Union, Optional
 from pathlib import Path
+from typing import Dict, List, Tuple, Union, Optional
 
-import numpy as np
 import mlflow
+import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.linear_model import LogisticRegression
 
-from constants import MODEL_DIR, MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT_NAME
 from src.prepare_dataset import split_data, prepare_data, read_dataset
+from constants import MODEL_DIR, MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT_NAME
 
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)

@@ -41,10 +41,24 @@ deployments:
   entrypoint: src\flows\model_training.py:feature_selection_flow
   parameters: {
       "numeric_cols_list": [
+        ["Humidity[%]"],
         ["Temperature[C]"],
-        ["Humidity[%]"]
+        ["Temperature[C]", "Humidity[%]"],
+        ["Temperature[C]", "Humidity[%]", "eCO2[ppm]"]
       ]
     }
+  work_pool:
+    name: local-pool
+    work_queue_name:
+    job_variables: {}
+  schedules: []
+
+- name: model-evaluation
+  version:
+  tags: []
+  description:
+  entrypoint: src\flows\model_evaluation.py:evaluate_model_flow
+  parameters: {}
   work_pool:
     name: local-pool
     work_queue_name:

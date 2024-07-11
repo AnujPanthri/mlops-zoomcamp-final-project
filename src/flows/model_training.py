@@ -1,9 +1,9 @@
 import mlflow
 from prefect import flow, task, get_run_logger
 
-from constants import MODEL_DIR, MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT_NAME
 from src.model import Model
 from src.prepare_dataset import split_data, prepare_data, read_dataset
+from constants import MODEL_DIR, MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT_NAME
 
 
 @task

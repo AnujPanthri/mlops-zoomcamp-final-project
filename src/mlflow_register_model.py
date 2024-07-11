@@ -14,7 +14,7 @@ mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
 
 def create_registered_model():
 
-    # client.delete_registered_model(MLFLOW_MODEL_NAME)
+    client.delete_registered_model(MLFLOW_MODEL_NAME)
 
     registered_models = client.search_registered_models(
         filter_string=f"name='{MLFLOW_MODEL_NAME}'",
@@ -40,7 +40,7 @@ def register_models_by_acc(acc_thres=70):
     )[0]
 
     # fetching all the runs in the experiment
-    runs = client.search_runs(experiment.experiment_id)
+    runs = client.search_runs(experiment.experiment_id, order_by=["metrics.val_acc ASC"])
 
     # Fetch the list of registered models and their versions
     registered_model_versions = client.search_model_versions(
@@ -72,4 +72,4 @@ def register_models_by_acc(acc_thres=70):
 
 if __name__ == "__main__":
     create_registered_model()
-    register_models_by_acc(70)
+    register_models_by_acc(77)
