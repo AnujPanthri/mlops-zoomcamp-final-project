@@ -83,3 +83,15 @@ open http://localhost:4200/deployments and run deployments.
 ```bash
 python -m src.mlflow_register_model
 ```
+
+## Model Deployment
+I am using flask to serve the model, which is read from the model registry of mlflow. Model version is configurable via ```MLFLOW_MODEL_VERSION``` environment variable.
+
+```bash
+python -m deployment.main
+```
+
+### test deployed model
+```bash
+python -m deployment.test_predict
+```

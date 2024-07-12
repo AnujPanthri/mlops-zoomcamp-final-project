@@ -3,6 +3,7 @@ import os
 import boto3
 import requests
 import numpy as np
+import pandas as pd
 from mlflow.client import MlflowClient
 from flask import Flask, Response, jsonify, request
 
@@ -10,7 +11,7 @@ from src.model import Model
 from src.s3_utils import download_s3_folder
 from constants import MODEL_DIR, MLFLOW_MODEL_NAME, MLFLOW_TRACKING_URI
 
-mlflow_model_version = os.getenv("MLFLOW_MODEL_VERSION", "2")
+mlflow_model_version = os.getenv("MLFLOW_MODEL_VERSION", "5")
 client = MlflowClient(MLFLOW_TRACKING_URI)
 mlflow_model = client.get_model_version(MLFLOW_MODEL_NAME, mlflow_model_version)
 s3_resource = boto3.resource("s3")
@@ -52,11 +53,18 @@ def test():
                 [40, 100, 60],
             ]
         )
-        dummy_data = {
-            "Temperature[C]": 40,
-            "Humidity[%]": 100,
-            "eC02[ppm]": 60,
-        }
+        dummy_data = [
+            {
+                "Humidity[%]": 30,
+                "Temperature[C]": 20,
+                "eCO2[ppm]": 12,
+            },
+            {
+                "Temperature[C]": 40,
+                "Humidity[%]": 100,
+                "eCO2[ppm]": 60,
+            },
+        ]
 
     if dummy_data is None:
         response = {
@@ -66,8 +74,8 @@ def test():
 
     else:
         y_pred_response = requests.post(
-            f"http://{host}:{port}/predict",
-            data=dummy_data,
+            f"http://localhost:{port}/predict",
+            json=dummy_data,
             timeout=10,
         ).json()
 
@@ -80,42 +88,31 @@ def test():
     return jsonify(response)
 
 
-@app.route("/predict", method=["POST"])
+@app.route("/predict", methods=["POST"])
 def predict():
     # pylint: disable=broad-exception-raised
+    if request.is_json:
+        json_request_data = request.get_json()
+    else:
+        return jsonify({"error": "pass json only"})
 
-    temperature = request.form.get("Temperature[C]")
-    humidity = request.form.get("Humidity[%]")
-    eco2 = request.form.get("eC02[ppm]")
+    if not isinstance(json_request_data, list):
+        return jsonify({"error": "pass list of features"})
 
-    field_missing_msg = "{} field is missing"
+    # print(type(json_request_data))
+    # print(json_request_data)
+    for data_json in json_request_data:
+        if not set(model.numeric_cols).issubset(set(data_json.keys())):
+            return jsonify(
+                {"error": f"pass all the features including {model.numeric_cols}"}
+            )
 
-    if temperature is None and temperature_col in model.numeric_cols:
-        return jsonify({"error": field_missing_msg.format(temperature_col)})
+    data_df = pd.DataFrame(json_request_data, columns=model.numeric_cols)
 
-    if humidity is None and humidity_col in model.numeric_cols:
-        return jsonify({"error": field_missing_msg.format(humidity_col)})
-
-    if eco2 is None and eco2_col in model.numeric_cols:
-        return jsonify({"error": field_missing_msg.format(eco2_col)})
-
-    # now run the model
-    data = []
-
-    for col in model.numeric_cols:
-        if col == temperature_col:
-            data.append(temperature)
-        elif col == humidity_col:
-            data.append(humidity_col)
-        elif col == eco2_col:
-            data.append(eco2)
-        else:
-            raise Exception(f"unknown column: {col} required by model")
-
-    data = np.array([data])
-    y_pred = model.predict(data)
+    # print(data_df)
+    y_pred = model.predict(data_df)
     y_pred = y_pred.tolist()
-
+    # print("see:",y_pred)
     return jsonify(y_pred)
 
 
