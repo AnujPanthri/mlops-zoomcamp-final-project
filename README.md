@@ -80,6 +80,6 @@ open http://localhost:4200/deployments and run deployments.
 - ```model-evaluation```: it is used to evaluate an model registered by mlflow, **so before running this you need to register the models using ```src/mlflow_register_model.py``` script**.
 
 ### register best models:
-```
+```bash
 python -m src.mlflow_register_model
 ```

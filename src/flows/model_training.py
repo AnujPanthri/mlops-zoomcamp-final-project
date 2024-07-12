@@ -49,6 +49,7 @@ def save_model_task(model, model_dir):
 @flow
 def train_simple_flow(numeric_cols, seed=565):
     target = "Fire Alarm"
+    numeric_cols = sorted(numeric_cols)
 
     logger = get_run_logger()
 
@@ -106,6 +107,7 @@ def feature_selection_flow(numeric_cols_list: list):
     logger = get_run_logger()
     for i, numeric_cols in enumerate(numeric_cols_list):
         assert isinstance(numeric_cols, list)
+        numeric_cols = sorted(numeric_cols)
 
         logger.info(
             (
