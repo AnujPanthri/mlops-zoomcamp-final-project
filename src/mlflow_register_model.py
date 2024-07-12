@@ -14,7 +14,7 @@ mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
 
 def create_registered_model():
 
-    client.delete_registered_model(MLFLOW_MODEL_NAME)
+    # client.delete_registered_model(MLFLOW_MODEL_NAME)
 
     registered_models = client.search_registered_models(
         filter_string=f"name='{MLFLOW_MODEL_NAME}'",

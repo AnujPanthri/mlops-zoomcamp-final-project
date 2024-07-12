@@ -14,17 +14,24 @@ So given the informations from the different sensors found in an smoke detector 
 - [X] add Makefile
 - [X] using terraform for provisioning the cloud infrastructure(s3 bucket) involved in this project
 - [X] using mlflow to track the training experiments and for Model Registry
-- [ ] using workflow orchestrator(Prefect) to manage the training pipeline
+- [X] using workflow orchestrator(Prefect) to manage the training pipeline
 - [ ] model deployment
 - [ ] model monitoring
 - [ ] writing unit tests and integration tests
 
+## Setup Dependencies
+install **python 3.11** if not installed
+also install **docker** if not installed
+also install **make** if not installed
+
+```bash
+make install
+```
 
 ## Setup for Contribution
 
 ```bash
-pipenv install
-pipenv shell
+make install
 pre-commit install
 ```
 
@@ -33,22 +40,46 @@ pre-commit install
 I am using tflocal which is an wrapper for terraform which allows us to run terraform locally with localstack.
 
 ```bash
-tflocal init
-tflocal plan
-tflocal apply
+make start-infra
+make create-infra
 ```
 
-## Prefect
 
-- prefect work-pool create --type process local-pool
-- prefect worker start --pool local-pool
-- prefect deploy --all
-- prefect deployment run 'train-simple-flow/simple-model-training'
-
-## Connect to prefect server
+## Start other services
 
 ```bash
-prefect config set PREFECT_API_URL="http://localhost:4200/api"
+make start-services
 ```
 
-##
+it starts postgresql, mlflow, and prefect.
+
+- postgresql: http://localhost:5432/
+- mlflow: http://localhost:5000/
+- prefect: http://localhost:4200/
+
+## Train model
+
+### register deployments:
+```bash
+prefect deploy --all
+```
+
+### add a worker to prefect work pool local-pool:
+we have made up an local process work pool which we are gonna use to run our deployments on, but before we run a deployment we will need to start an worker for our work pool ```local-pool``` on a new terminal(always run pipenv shell before anything).
+```bash
+prefect worker start --pool local-pool
+```
+
+### run deployments from prefect ui :-
+open http://localhost:4200/deployments and run deployments.
+
+- ```simple_model_training```: it is used to train a single model with the given numeric_cols.
+
+- ```simple-model-feature-selection-search```: it is used to train multiple models using different set of features to compare which set of features gives us the best models, all the experiments are tracked and logged with mlflow so you can check their correponding runs on mlflow.
+
+- ```model-evaluation```: it is used to evaluate an model registered by mlflow, **so before running this you need to register the models using ```src/mlflow_register_model.py``` script**.
+
+### register best models:
+```
+python -m src.mlflow_register_model
+```
