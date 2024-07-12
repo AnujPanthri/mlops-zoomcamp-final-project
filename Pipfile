@@ -16,6 +16,7 @@ python-hcl2 = "*"
 mlflow = "*"
 boto3 = "*"
 prefect = "*"
+flask = "*"
 
 [dev-packages]
 boto3-stubs = {extras = ["s3"], version = "==1.34.140"}

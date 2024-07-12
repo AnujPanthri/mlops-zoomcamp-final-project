@@ -25,7 +25,7 @@ class Model:
     def __init__(
         self, numeric_cols: List, target: str, model: Optional[BaseEstimator] = None
     ):
-        self.numeric_cols = numeric_cols
+        self.numeric_cols = sorted(numeric_cols)
         self.target = target
         self.model = model
 
