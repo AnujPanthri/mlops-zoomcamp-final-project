@@ -11,25 +11,36 @@ from src.model import Model
 from src.s3_utils import download_s3_folder
 from constants import MODEL_DIR, MLFLOW_MODEL_NAME, MLFLOW_TRACKING_URI
 
-mlflow_model_version = os.getenv("MLFLOW_MODEL_VERSION", "5")
-client = MlflowClient(MLFLOW_TRACKING_URI)
-mlflow_model = client.get_model_version(MLFLOW_MODEL_NAME, mlflow_model_version)
-s3_resource = boto3.resource("s3")
+
+def download_mlflow_model():
+    mlflow_model_version = os.getenv("MLFLOW_MODEL_VERSION", "5")
+    client = MlflowClient(MLFLOW_TRACKING_URI)
+    mlflow_model = client.get_model_version(MLFLOW_MODEL_NAME, mlflow_model_version)
+    s3_resource = boto3.resource("s3")
+
+    download_s3_folder(
+        s3_resource,
+        s3_path=mlflow_model.source,
+        local_dir=MODEL_DIR,
+    )
+
+
+def is_valid_json_input(json_data_list: list[dict]) -> bool:
+    for data_json in json_data_list:
+        if not set(model.numeric_cols).issubset(set(data_json.keys())):
+            return False
+    return True
+
 
 host = "0.0.0.0"
 port = 8080
 
 app = Flask(__name__)
 
-temperature_col, humidity_col, eco2_col = "Temperature[C]", "Humidity[%]", "eCO2[ppm]"
-
-download_s3_folder(
-    s3_resource,
-    s3_path=mlflow_model.source,
-    local_dir=MODEL_DIR,
-)
-
+download_mlflow_model()
 model = Model.from_model_dir(MODEL_DIR)
+
+temperature_col, humidity_col, eco2_col = "Temperature[C]", "Humidity[%]", "eCO2[ppm]"
 
 
 @app.route("/", methods=["GET"])
@@ -101,11 +112,8 @@ def predict():
 
     # print(type(json_request_data))
     # print(json_request_data)
-    for data_json in json_request_data:
-        if not set(model.numeric_cols).issubset(set(data_json.keys())):
-            return jsonify(
-                {"error": f"pass all the features including {model.numeric_cols}"}
-            )
+    if not is_valid_json_input(json_request_data):
+        return jsonify({"error": f"pass all the features including {model.numeric_cols}"})
 
     data_df = pd.DataFrame(json_request_data, columns=model.numeric_cols)
 

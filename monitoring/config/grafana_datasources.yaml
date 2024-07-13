@@ -1,0 +1,12 @@
+apiVersion: 1
+
+datasources:
+  - name: mypostgresql
+    type: postgres
+    url: db:5432
+    user: monitoring
+    secureJsonData:
+      password: 'secret'
+    jsonData:
+      sslmode: 'disable'
+      database: monitoring

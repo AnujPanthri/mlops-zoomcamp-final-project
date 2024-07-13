@@ -13,6 +13,7 @@ So given the informations from the different sensors found in an smoke detector 
 - [X] setup pre-commit hooks
 - [X] add Makefile
 - [X] using terraform for provisioning the cloud infrastructure(s3 bucket) involved in this project
+- [X] add persistence for localstack and postgresql containers
 - [X] using mlflow to track the training experiments and for Model Registry
 - [X] using workflow orchestrator(Prefect) to manage the training pipeline
 - [ ] model deployment
@@ -95,3 +96,7 @@ python -m deployment.main
 ```bash
 python -m deployment.test_predict
 ```
+
+
+## USE THIS instead of localstack
+https://hub.docker.com/r/gresau/localstack-persist

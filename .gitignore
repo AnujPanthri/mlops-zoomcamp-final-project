@@ -4,3 +4,4 @@ __pycache__/
 
 dataset/extracted
 artifacts/
+persistence/

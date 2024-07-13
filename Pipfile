@@ -7,19 +7,20 @@ name = "pypi"
 numpy = "*"
 pandas = "*"
 scikit-learn = "*"
+mlflow = "*"
+boto3 = "*"
+flask = "*"
+psycopg2-binary = "*"
+
+[dev-packages]
+boto3-stubs = {extras = ["s3"], version = "==1.34.140"}
 black = "*"
 isort = "*"
 pylint = "*"
 pre-commit = "*"
 terraform-local = "*"
 python-hcl2 = "*"
-mlflow = "*"
-boto3 = "*"
 prefect = "*"
-flask = "*"
-
-[dev-packages]
-boto3-stubs = {extras = ["s3"], version = "==1.34.140"}
 
 [requires]
 python_version = "3.11"

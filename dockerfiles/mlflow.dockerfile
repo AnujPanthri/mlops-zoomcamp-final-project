@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-RUN pip install mlflow==2.14.2 boto3==1.34.140
+RUN pip install mlflow==2.14.2 boto3==1.34.140 psycopg2-binary==2.9.9
 RUN apt-get update && \
     apt-get -y install curl unzip zip
 

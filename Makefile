@@ -2,8 +2,10 @@ s3_bucket_name := $(shell cd infrastructure/ && tflocal output -raw model_bucket
 
 install:
 	pip install pipenv
-	pipenv install
+	pipenv install --dev
 	prefect config set PREFECT_API_URL="http://localhost:4200/api"
+	mkdir ./persistence/localstack_data
+	mkdir ./persistence/postgresql_data
 
 quality-checks:
 	isort .
@@ -27,6 +29,12 @@ start-services:
 	echo "this is the s3_bucket url: $${S3_BUCKET_URL}"; \
 	docker compose up db mlflow prefect --build -d
 
+deploy:
+	docker compose up deployment grafana --build
+
+clear-persistence:
+	rm -r ./persistence/localstack_data/*
+	rm -r ./persistence/postgresql_data/*
 
 local-work-pool:
 	prefect work-pool create --type process local-pool

@@ -6,9 +6,11 @@ services:
   # infrastructure
   ####################################################
   localstack:
-    image: localstack/localstack
+    image: gresau/localstack-persist
     ports:
       - 4566:4566
+    volumes:
+      - ./persistence/localstack_data:/persisted-data
     environment:
       - SERVICES=s3,sts,iam
     networks:
@@ -18,21 +20,31 @@ services:
     image: postgres
     ports:
       - 5432:5432
+    volumes:
+      - ./dockerfiles/postgres_multiple_db.sh:/docker-entrypoint-initdb.d/multiple-databases.sh
+      - ./persistence/postgresql_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=secret
       - POSTGRES_USER=normal_user
-      - POSTGRES_MULTIPLE_DATABASES= mlflow_db, prefect
+      - POSTGRES_MULTIPLE_DATABASES= mlflow_db, prefect, monitoring
     networks:
       - common-network
-    volumes:
-      - ./dockerfiles/postgres_multiple_db.sh:/docker-entrypoint-initdb.d/multiple-databases.sh
+
+    healthcheck:
+      test: pg_isready -U mlflow_db -d mlflow_db
+      start_period: 2s
+      interval: 5s
+      retries: 6
+      timeout: 30s
 
   ####################################################
   # Experiment Tracking with MLflow
   ####################################################
   mlflow:
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+        restart: true
     build:
       context: ./dockerfiles
       dockerfile: mlflow.dockerfile
@@ -46,16 +58,18 @@ services:
       - MLFLOW_S3_ENDPOINT_URL=http://localstack:4566
       - AWS_ACCESS_KEY_ID=access_key_id
       - AWS_SECRET_ACCESS_KEY=secret_access_key
-      - MLFLOW_TRACKING_URI=postgresql+psycog2://mlflow_db:secret@db:5432/mlflow_db
+      - MLFLOW_BACKEND_STORE_URI=postgresql+psycog2://mlflow_db:secret@db:5432/mlflow_db
       - MLFLOW_DEFAULT_ARTIFACT_ROOT=${S3_BUCKET_URL}/mlflow-artifacts
 
-    command: mlflow server --host 0.0.0.0 --port 5000
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://mlflow_db:secret@db:5432/mlflow_db
   ####################################################
   # Orchestration with Prefect
   ####################################################
   prefect:
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+        restart: true
     build:
       context: ./dockerfiles
       dockerfile: prefect.dockerfile
@@ -63,10 +77,46 @@ services:
       - 4200:4200
     networks:
       - common-network
-
+    volumes:
+      - ./dockerfiles/prefect_startup.sh:/prefect_startup.sh
     entrypoint:
-    command: bash -c "
-        prefect config set PREFECT_API_DATABASE_CONNECTION_URL="postgresql+asyncpg://prefect:secret@db:5432/prefect" &&
-        prefect work-pool create --type process local-pool &&
-        prefect server start --host 0.0.0.0 --port 4200
-      "
+    command: bash /prefect_startup.sh
+
+
+  #####################################################
+  # Deploying Model Prediction Service
+  #####################################################
+  deployment:
+    build:
+      context: ./
+      dockerfile: ./deployment/Dockerfile
+    depends_on:
+      localstack:
+        condition: service_started
+
+      db:
+        condition: service_healthy
+        restart: true
+
+    ports:
+      - 8080:8080
+
+  #####################################################
+  # Monitoring using Grafana
+  #####################################################
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+
+    networks:
+      - common-network
+
+    volumes:
+      - ./monitoring/config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
