@@ -23,6 +23,7 @@ So given the informations from the different sensors found in an smoke detector 
 ## Setup Dependencies
 install **python 3.11** if not installed
 also install **docker** if not installed
+also install **terraform** if not installed
 also install **make** if not installed
 
 ```bash
@@ -67,11 +68,13 @@ prefect deploy --all
 
 ### add a worker to prefect work pool local-pool:
 we have made up an local process work pool which we are gonna use to run our deployments on, but before we run a deployment we will need to start an worker for our work pool ```local-pool``` on a new terminal(always run pipenv shell before anything).
+
 ```bash
-prefect worker start --pool local-pool
+make local-work-pool-worker
 ```
 
 ### run deployments from prefect ui :-
+
 open http://localhost:4200/deployments and run deployments.
 
 - ```simple_model_training```: it is used to train a single model with the given numeric_cols.

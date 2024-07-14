@@ -24,7 +24,7 @@ deployments:
   version:
   tags: []
   description:
-  entrypoint: src\flows\model_training.py:train_simple_flow
+  entrypoint: ./src/flows/model_training.py:train_simple_flow
   parameters: {
       "numeric_cols": ["Temperature[C]", "Humidity[%]"]
     }
@@ -38,7 +38,7 @@ deployments:
   version:
   tags: []
   description:
-  entrypoint: src\flows\model_training.py:feature_selection_flow
+  entrypoint: ./src/flows/model_training.py:feature_selection_flow
   parameters: {
       "numeric_cols_list": [
         ["Humidity[%]"],
@@ -57,7 +57,7 @@ deployments:
   version:
   tags: []
   description:
-  entrypoint: src\flows\model_evaluation.py:evaluate_model_flow
+  entrypoint: ./src/flows/model_evaluation.py:evaluate_model_flow
   parameters: {}
   work_pool:
     name: local-pool

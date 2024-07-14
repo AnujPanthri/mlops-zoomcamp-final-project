@@ -58,7 +58,7 @@ services:
       - MLFLOW_S3_ENDPOINT_URL=http://localstack:4566
       - AWS_ACCESS_KEY_ID=access_key_id
       - AWS_SECRET_ACCESS_KEY=secret_access_key
-      - MLFLOW_BACKEND_STORE_URI=postgresql+psycog2://mlflow_db:secret@db:5432/mlflow_db
+      - MLFLOW_BACKEND_STORE_URI=postgresql://mlflow_db:secret@db:5432/mlflow_db
       - MLFLOW_DEFAULT_ARTIFACT_ROOT=${S3_BUCKET_URL}/mlflow-artifacts
 
     command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://mlflow_db:secret@db:5432/mlflow_db
@@ -100,7 +100,14 @@ services:
 
     ports:
       - 8080:8080
-
+    networks:
+      - common-network
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000/
+      - AWS_REGION=us-east-1
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=access_key_id
+      - AWS_SECRET_ACCESS_KEY=secret_access_key
   #####################################################
   # Monitoring using Grafana
   #####################################################
@@ -120,3 +127,5 @@ services:
 
     volumes:
       - ./monitoring/config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
+      - ./monitoring/config/grafana_dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
+      - ./monitoring/dashboards:/opt/grafana/dashboards

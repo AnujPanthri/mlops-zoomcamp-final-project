@@ -13,8 +13,11 @@ from constants import MODEL_DIR, MLFLOW_MODEL_NAME, MLFLOW_TRACKING_URI
 
 
 def download_mlflow_model():
-    mlflow_model_version = os.getenv("MLFLOW_MODEL_VERSION", "5")
-    client = MlflowClient(MLFLOW_TRACKING_URI)
+    mlflow_model_version = os.getenv("MLFLOW_MODEL_VERSION", "2")
+    mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI", MLFLOW_TRACKING_URI)
+    # print(mlflow_tracking_uri)
+    # print(MLFLOW_MODEL_NAME, mlflow_model_version)
+    client = MlflowClient(mlflow_tracking_uri)
     mlflow_model = client.get_model_version(MLFLOW_MODEL_NAME, mlflow_model_version)
     s3_resource = boto3.resource("s3")
 
