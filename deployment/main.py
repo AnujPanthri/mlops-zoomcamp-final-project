@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 import os
 
 import boto3
@@ -5,11 +7,19 @@ import requests
 import numpy as np
 import pandas as pd
 from mlflow.client import MlflowClient
-from flask import Flask, Response, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
 from src.model import Model
 from src.s3_utils import download_s3_folder
 from constants import MODEL_DIR, MLFLOW_MODEL_NAME, MLFLOW_TRACKING_URI
+from monitoring.log_evidently_metrics import (
+    get_evidently_df,
+    calculate_metrics,
+    load_reference_df,
+    save_reference_df,
+    log_evidently_metrics,
+    truncate_evidently_table,
+)
 
 
 def download_mlflow_model():
@@ -35,6 +45,7 @@ def is_valid_json_input(json_data_list: list[dict]) -> bool:
     return True
 
 
+################################################ Initializing some globals ###########################################################
 host = "0.0.0.0"
 port = 8080
 
@@ -45,13 +56,16 @@ model = Model.from_model_dir(MODEL_DIR)
 
 temperature_col, humidity_col, eco2_col = "Temperature[C]", "Humidity[%]", "eCO2[ppm]"
 
+############################################## evidently metrics related #############################################################
+save_reference_df(model)
+reference_df = load_reference_df()
+truncate_evidently_table()
+
 
 @app.route("/", methods=["GET"])
 def home():
-    html = """
-    <a href="/test">test link<a>
-"""
-    return Response(html, mimetype="text/html")
+    context = {"numeric_cols": list(model.numeric_cols)}
+    return render_template("index.html", context=context)
 
 
 @app.route("/test", methods=["GET"])
@@ -113,18 +127,19 @@ def predict():
     if not isinstance(json_request_data, list):
         return jsonify({"error": "pass list of features"})
 
-    # print(type(json_request_data))
-    # print(json_request_data)
     if not is_valid_json_input(json_request_data):
         return jsonify({"error": f"pass all the features including {model.numeric_cols}"})
 
     data_df = pd.DataFrame(json_request_data, columns=model.numeric_cols)
 
-    # print(data_df)
     y_pred = model.predict(data_df)
-    y_pred = y_pred.tolist()
-    # print("see:",y_pred)
-    return jsonify(y_pred)
+
+    # log evidently metrics
+    current_df = get_evidently_df(data_df, y_pred)
+    metrics = calculate_metrics(reference_df, current_df, model)
+    log_evidently_metrics(metrics)
+
+    return jsonify(y_pred.tolist())
 
 
 if __name__ == "__main__":

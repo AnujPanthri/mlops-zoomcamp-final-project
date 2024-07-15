@@ -2,6 +2,7 @@ import time
 import random
 import datetime
 
+import pytz
 import psycopg2
 
 create_table_statement = """
@@ -24,6 +25,7 @@ def init_table():
 
 def add_dummy_data():
     insert_statement = "INSERT INTO dummy_metrics(timestamp, numeric_val) VALUES(%s, %s);"
+    timestamp = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
     with psycopg2.connect(
         "host=localhost port=5432 user=monitoring password=secret dbname=monitoring",
     ) as conn:
@@ -31,7 +33,7 @@ def add_dummy_data():
 
             curr.execute(
                 insert_statement,
-                (datetime.datetime.now(), random.random() * 100),
+                (timestamp, random.random() * 100),
             )
 
 

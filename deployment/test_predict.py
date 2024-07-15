@@ -1,5 +1,6 @@
 import requests
 
+# pylint: disable=duplicate-code
 dummy_data = [
     {
         "Humidity[%]": 30,

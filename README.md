@@ -16,8 +16,8 @@ So given the informations from the different sensors found in an smoke detector 
 - [X] add persistence for localstack and postgresql containers
 - [X] using mlflow to track the training experiments and for Model Registry
 - [X] using workflow orchestrator(Prefect) to manage the training pipeline
-- [ ] model deployment
-- [ ] model monitoring
+- [X] model deployment
+- [X] model monitoring
 - [ ] writing unit tests and integration tests
 
 ## Setup Dependencies

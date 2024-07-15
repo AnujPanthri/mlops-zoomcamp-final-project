@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smoke Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+
+<body>
+
+    <header>
+        Smoke Detector
+    </header>
+    <a href="/test">test link</a>
+    <main>
+
+        <form class="form" onsubmit="handleSubmit(event, this);">
+            {% for col in context['numeric_cols'] %}
+            <input class="form__input" type=number step=0.01 placeholder="{{ col }}" id="{{ col }}" name="{{ col }}" required/>
+            {% endfor %}
+            <input class="form__submit_btn" type="submit" />
+        </form>
+
+        <div class="result_container__result">Enter the values.</div>
+    </main>
+    <footer>
+        Made by <a href="https://github.com/AnujPanthri">Anuj Panthri</a>
+        &nbsp;|&nbsp;
+        in regards with <a href="https://github.com/DataTalksClub/mlops-zoomcamp/">mlops zoomcamp</a>
+    </footer>
+</body>
+
+</html>

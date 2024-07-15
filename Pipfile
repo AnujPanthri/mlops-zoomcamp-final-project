@@ -13,6 +13,7 @@ flask = "*"
 psycopg2-binary = "*"
 evidently = "*"
 prefect = "*"
+pytz = "*"
 
 [dev-packages]
 boto3-stubs = {extras = ["s3"], version = "==1.34.140"}
