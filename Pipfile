@@ -12,6 +12,7 @@ boto3 = "*"
 flask = "*"
 psycopg2-binary = "*"
 evidently = "*"
+prefect = "*"
 
 [dev-packages]
 boto3-stubs = {extras = ["s3"], version = "==1.34.140"}
@@ -22,8 +23,7 @@ pre-commit = "*"
 terraform-local = "*"
 python-hcl2 = "*"
 ipykernel = "*"
-prefect = "2.19.7"
-anyio = "==3.7.1"
+prefect = "*"
 
 [requires]
 python_version = "3.11"
