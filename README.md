@@ -53,11 +53,12 @@ make create-infra
 make start-services
 ```
 
-it starts postgresql, mlflow, and prefect.
+it starts postgresql, mlflow, prefect and evidently.
 
 - postgresql: http://localhost:5432/
 - mlflow: http://localhost:5000/
 - prefect: http://localhost:4200/
+- evidently: http://localhost:3000/
 
 ## Train model
 
@@ -91,15 +92,23 @@ python -m src.mlflow_register_model
 ## Model Deployment
 I am using flask to serve the model, which is read from the model registry of mlflow. Model version is configurable via ```MLFLOW_MODEL_VERSION``` environment variable.
 
+for deploying in current environment
 ```bash
-python -m deployment.main
+make dev-deploy
 ```
+
+for deploying in docker container
+```bash
+make deploy
+```
+
+you can access the deployment website on http://localhost:8080/
 
 ### test deployed model
 ```bash
 python -m deployment.test_predict
 ```
 
-
 ## USE THIS instead of localstack
+this is localstack with persistence
 https://hub.docker.com/r/gresau/localstack-persist

@@ -27,7 +27,7 @@ create-infra:
 start-services:
 	export S3_BUCKET_URL="s3://${s3_bucket_name}"; \
 	echo "this is the s3_bucket url: $${S3_BUCKET_URL}"; \
-	docker compose up db mlflow prefect --build -d
+	docker compose up db mlflow prefect grafana --build -d
 
 dev-deploy:
 	export AWS_REGION=us-east-1; \
@@ -37,7 +37,7 @@ dev-deploy:
 	python -m deployment.main
 
 deploy:
-	docker compose up deployment grafana --build -d
+	docker compose up deployment --build -d
 
 clear-persistence:
 	rm -r ./persistence/localstack_data/*

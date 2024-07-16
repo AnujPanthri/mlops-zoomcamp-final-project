@@ -23,6 +23,10 @@ input{
     outline: none;
 }
 
+a{
+    color:#115;
+}
+
 header{
     font-size: 3em;
 }
@@ -63,8 +67,4 @@ main{
 
 footer{
     margin-bottom: 0.5em;
-}
-
-footer>a{
-    color:#115;
 }
