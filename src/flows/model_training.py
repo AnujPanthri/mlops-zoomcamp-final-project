@@ -3,7 +3,12 @@ from prefect import flow, task, get_run_logger
 
 from src.model import Model
 from src.prepare_dataset import split_data, prepare_data, read_dataset
-from constants import MODEL_DIR, MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT_NAME
+from constants import (
+    SEED,
+    MODEL_DIR,
+    MLFLOW_TRACKING_URI,
+    MLFLOW_EXPERIMENT_NAME,
+)
 
 
 @task
@@ -19,8 +24,8 @@ def prepare_dataset_task(df, numeric_cols, target):
 
 
 @task
-def split_dataset_task(X, y, seed):
-    X_train, X_val, y_train, y_val = split_data(X, y, test_size=0.2, random_state=seed)
+def split_dataset_task(X, y):
+    X_train, X_val, y_train, y_val = split_data(X, y, test_size=0.2, random_state=SEED)
     return X_train, X_val, y_train, y_val
 
 
@@ -47,7 +52,7 @@ def save_model_task(model, model_dir):
 
 
 @flow
-def train_simple_flow(numeric_cols, seed=565):
+def train_simple_flow(numeric_cols):
     target = "Fire Alarm"
     numeric_cols = sorted(numeric_cols)
 
@@ -59,7 +64,7 @@ def train_simple_flow(numeric_cols, seed=565):
     with mlflow.start_run() as curr_run:
         logger.info(f"started mlflow run: {curr_run.info.run_name}")
 
-        mlflow.log_param("seed", seed)
+        mlflow.log_param("seed", SEED)
         mlflow.log_param("numeric_cols", numeric_cols)
 
         df = read_dataset_task()
@@ -73,7 +78,7 @@ def train_simple_flow(numeric_cols, seed=565):
         X_train, X_val, y_train, y_val = split_dataset_task(
             X=X,
             y=y,
-            seed=seed,
+            seed=SEED,
         )
 
         logger.info(f"Training data shape(X,y): {X_train.shape}, {y_train.shape}")
@@ -120,10 +125,8 @@ def feature_selection_flow(numeric_cols_list: list):
 
 
 if __name__ == "__main__":
-    seed = 565
     numeric_cols = ["Temperature[C]", "Humidity[%]"]
 
     train_simple_flow(
         numeric_cols=numeric_cols,
-        seed=seed,
     )

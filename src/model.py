@@ -11,7 +11,12 @@ from sklearn.base import BaseEstimator
 from sklearn.linear_model import LogisticRegression
 
 from src.prepare_dataset import split_data, prepare_data, read_dataset
-from constants import MODEL_DIR, MLFLOW_TRACKING_URI, MLFLOW_EXPERIMENT_NAME
+from constants import (
+    SEED,
+    MODEL_DIR,
+    MLFLOW_TRACKING_URI,
+    MLFLOW_EXPERIMENT_NAME,
+)
 
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
@@ -102,9 +107,8 @@ def model_training_pipeline():
 
         target = "Fire Alarm"
         numeric_cols = ["Temperature[C]", "Humidity[%]"]
-        seed = 565
 
-        mlflow.log_param("seed", seed)
+        mlflow.log_param("seed", SEED)
         mlflow.log_param("numeric_cols", numeric_cols)
 
         df = read_dataset()
@@ -113,7 +117,7 @@ def model_training_pipeline():
 
         X, y = prepare_data(df=df, numeric_cols=model.numeric_cols, target=model.target)
         X_train, X_val, y_train, y_val = split_data(
-            X, y, test_size=0.2, random_state=seed
+            X, y, test_size=0.2, random_state=SEED
         )
 
         print("Training data shape(X,y):", X_train.shape, y_train.shape)
@@ -141,14 +145,13 @@ def model_training_pipeline():
 
 def evaluate_model_pipeline():
     print("\nRunning evaluate model pipeline:")
-    seed = 565
 
     df = read_dataset()
 
     model = Model.from_model_dir(MODEL_DIR)
 
     X, y = prepare_data(df=df, numeric_cols=model.numeric_cols, target=model.target)
-    X_train, X_val, y_train, y_val = split_data(X, y, test_size=0.2, random_state=seed)
+    X_train, X_val, y_train, y_val = split_data(X, y, test_size=0.2, random_state=SEED)
 
     score = model.get_accuracy(X_train, y_train)
     print(f"Training Accuracy: {score:.4f}")

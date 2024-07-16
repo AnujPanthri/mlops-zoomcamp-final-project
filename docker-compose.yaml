@@ -103,6 +103,7 @@ services:
     networks:
       - common-network
     environment:
+      - DB_HOST=db
       - MLFLOW_TRACKING_URI=http://mlflow:5000/
       - AWS_REGION=us-east-1
       - AWS_ENDPOINT_URL=http://localstack:4566

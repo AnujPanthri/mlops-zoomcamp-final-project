@@ -17,6 +17,10 @@ from constants import SEED, MODEL_DIR, TEST_SIZE, MONITORING_ARTIFACT_DIR
 os.makedirs(MONITORING_ARTIFACT_DIR, exist_ok=True)
 
 REFERENCE_DF_PATH = MONITORING_ARTIFACT_DIR / "reference.csv"
+DB_HOST = os.getenv("DB_HOST", "localhost")
+PSYCOPG2_CONNECTION_STR = (
+    f"host={DB_HOST} port=5432 " "user=monitoring password=secret dbname=monitoring"
+)
 
 
 def _get_reference_data(
@@ -106,6 +110,9 @@ def calculate_metrics(
         "num_drifted_columns": result["metrics"][3]['result'][
             'number_of_drifted_columns'
         ],
+        "share_of_drifted_columns": result["metrics"][3]['result'][
+            'share_of_drifted_columns'
+        ],
     }
 
     return metrics
@@ -116,7 +123,7 @@ def truncate_evidently_table():
         truncate TABLE evidently_metrics;
     """
     with psycopg2.connect(
-        "host=localhost port=5432 user=monitoring password=secret dbname=monitoring",
+        PSYCOPG2_CONNECTION_STR,
     ) as conn:
         with conn.cursor() as curr:
             curr.execute(truncate_statement)
@@ -124,17 +131,19 @@ def truncate_evidently_table():
 
 def create_evidently_table():
     create_table_statement = """
+        drop table if exists evidently_metrics;
         CREATE TABLE if not exists evidently_metrics(
             timestamp timestamp,
             temperature_drift float,
             humidity_drift float,
             eCO2_drift float,
-            num_drifted_columns integer
+            num_drifted_columns integer,
+            share_of_drifted_columns integer
         );
     """
 
     with psycopg2.connect(
-        "host=localhost port=5432 user=monitoring password=secret dbname=monitoring",
+        PSYCOPG2_CONNECTION_STR,
     ) as conn:
         with conn.cursor() as curr:
             curr.execute(create_table_statement)
@@ -145,15 +154,15 @@ def log_evidently_metrics(metrics: Dict[str, Union[int, float]]):
     timestamp = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
 
     with psycopg2.connect(
-        "host=localhost port=5432 user=monitoring password=secret dbname=monitoring",
+        PSYCOPG2_CONNECTION_STR,
     ) as conn:
         with conn.cursor() as curr:
             curr.execute(
                 (
                     "INSERT INTO evidently_metrics"
                     "(timestamp, temperature_drift, humidity_drift, "
-                    "eCO2_drift, num_drifted_columns)"
-                    "VALUES(%s, %s, %s, %s, %s)"
+                    "eCO2_drift, num_drifted_columns, share_of_drifted_columns)"
+                    "VALUES(%s, %s, %s, %s, %s, %s)"
                 ),
                 (
                     timestamp,
@@ -161,6 +170,7 @@ def log_evidently_metrics(metrics: Dict[str, Union[int, float]]):
                     metrics['humidity_drift'],
                     metrics['eCO2_drift'],
                     metrics['num_drifted_columns'],
+                    metrics['share_of_drifted_columns'],
                 ),
             )
 

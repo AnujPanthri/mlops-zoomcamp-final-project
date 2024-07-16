@@ -6,14 +6,14 @@ from prefect.artifacts import create_markdown_artifact
 from src.model import Model
 from src.s3_utils import download_s3_folder
 from src.prepare_dataset import split_data, prepare_data, read_dataset
-from constants import MODEL_DIR, MLFLOW_MODEL_NAME, MLFLOW_TRACKING_URI
+from constants import SEED, MODEL_DIR, MLFLOW_MODEL_NAME, MLFLOW_TRACKING_URI
 
 
 @task
-def read_dataset_task(numeric_cols, target, seed):
+def read_dataset_task(numeric_cols, target):
     df = read_dataset()
     X, y = prepare_data(df=df, numeric_cols=numeric_cols, target=target)
-    X_train, X_val, y_train, y_val = split_data(X, y, test_size=0.2, random_state=seed)
+    X_train, X_val, y_train, y_val = split_data(X, y, test_size=0.2, random_state=SEED)
 
     return X_train, X_val, y_train, y_val
 
@@ -47,7 +47,6 @@ def calculate_accuracy_task(model, X, y):
 @flow
 def evaluate_model_flow(
     mlflow_model_version: str,
-    seed: int = 565,
 ) -> None:
 
     logger = get_run_logger()
@@ -60,7 +59,7 @@ def evaluate_model_flow(
     X_train, X_val, y_train, y_val = read_dataset_task(
         model.numeric_cols,
         model.target,
-        seed=seed,
+        seed=SEED,
     )
 
     train_acc = calculate_accuracy_task(model, X_train, y_train)

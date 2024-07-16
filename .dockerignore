@@ -1,7 +1,5 @@
-dataset/
 artifacts/
 dockerfiles/
 infrastructure/
-monitoring/
 notebooks/
 persistence/
