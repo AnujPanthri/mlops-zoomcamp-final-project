@@ -6,6 +6,7 @@ import boto3
 import requests
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
 from mlflow.client import MlflowClient
 from flask import Flask, jsonify, request, render_template
 
@@ -18,8 +19,9 @@ from monitoring.log_evidently_metrics import (
     load_reference_df,
     save_reference_df,
     log_evidently_metrics,
-    truncate_evidently_table,
 )
+
+load_dotenv()
 
 
 def download_mlflow_model():
@@ -59,7 +61,7 @@ temperature_col, humidity_col, eco2_col = "Temperature[C]", "Humidity[%]", "eCO2
 ############################################## evidently metrics related #############################################################
 save_reference_df(model)
 reference_df = load_reference_df()
-truncate_evidently_table()
+# truncate_evidently_table()
 
 
 @app.route("/", methods=["GET"])

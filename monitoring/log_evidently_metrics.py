@@ -1,5 +1,6 @@
 import os
 import datetime
+import traceback
 from typing import Dict, List, Union
 
 import pytz
@@ -21,6 +22,25 @@ DB_HOST = os.getenv("DB_HOST", "localhost")
 PSYCOPG2_CONNECTION_STR = (
     f"host={DB_HOST} port=5432 " "user=monitoring password=secret dbname=monitoring"
 )
+
+# dataset column name to simplified column name
+ds_col_to_simple_col = {
+    'UTC': "utc",
+    'Temperature[C]': "temperature",
+    'Humidity[%]': "humidity",
+    'TVOC[ppb]': "tvoc_ppb",
+    'eCO2[ppm]': "eco2_ppm",
+    'Raw H2': "raw_h2",
+    'Raw Ethanol': "raw_ethanol",
+    'Pressure[hPa]': "pressure_hpa",
+    'PM1.0': "pm_1_0",
+    'PM2.5': "pm_2_5",
+    'NC0.5': "nc0_5",
+    'NC1.0': "nc_1_0",
+    'NC2.5': "nc_2_5",
+    'CNT': "cnt",
+    'Fire Alarm': "fire_alarm",
+}
 
 
 def _get_reference_data(
@@ -58,11 +78,13 @@ def _calc_reference_df(model: Model) -> pd.DataFrame:
 
 def save_reference_df(model: Model) -> None:
     reference_df = _calc_reference_df(model)
+    print("saving reference df")
     reference_df.to_csv(REFERENCE_DF_PATH, index=False, header=True)
 
 
 def load_reference_df() -> pd.DataFrame:
     reference_df = pd.read_csv(REFERENCE_DF_PATH)
+    print("loaded reference df")
     return reference_df
 
 
@@ -75,12 +97,15 @@ def get_column_mapping(numeric_cols: List[str]) -> ColumnMapping:
     return column_mapping
 
 
-def get_report() -> Report:
+def get_report(model: Model) -> Report:
+    column_drift_metrics = []
+    for col in model.numeric_cols:
+        column_drift_metrics.append(
+            ColumnDriftMetric(column_name=col),
+        )
     report = Report(
         metrics=[
-            ColumnDriftMetric(column_name="Temperature[C]"),
-            ColumnDriftMetric(column_name="Humidity[%]"),
-            ColumnDriftMetric(column_name="eCO2[ppm]"),
+            *column_drift_metrics,
             DatasetDriftMetric(),
         ]
     )
@@ -94,7 +119,7 @@ def calculate_metrics(
 ) -> dict:
 
     column_mapping = get_column_mapping(model.numeric_cols)
-    report = get_report()
+    report = get_report(model)
     report.run(
         reference_data=reference_df,
         current_data=current_df,
@@ -103,79 +128,119 @@ def calculate_metrics(
 
     result = report.as_dict()
 
-    metrics = {
-        "temperature_drift": result["metrics"][0]['result']['drift_score'],
-        "humidity_drift": result["metrics"][1]['result']['drift_score'],
-        "eCO2_drift": result["metrics"][2]['result']['drift_score'],
-        "num_drifted_columns": result["metrics"][3]['result'][
-            'number_of_drifted_columns'
-        ],
-        "share_of_drifted_columns": result["metrics"][3]['result'][
-            'share_of_drifted_columns'
-        ],
-    }
+    tracked_metrics = {}
+    for metric in result["metrics"]:
 
-    return metrics
+        col_name = (
+            ds_col_to_simple_col[metric['result']['column_name']]
+            if "column_name" in metric['result']
+            else ""
+        )
+
+        if metric['metric'] == "ColumnDriftMetric":
+            db_col_name = col_name + "__column_drift"
+            tracked_metrics[db_col_name] = metric['result']['drift_score']
+
+        elif metric['metric'] == "DatasetDriftMetric":
+            db_col_name = "num_drifted_columns"
+            tracked_metrics[db_col_name] = metric['result']['number_of_drifted_columns']
+
+            db_col_name = "share_drifted_columns"
+            tracked_metrics[db_col_name] = metric['result']['share_of_drifted_columns']
+        else:
+            raise NotImplementedError(
+                (f"Unsupported evidently metric type: {metric['metric']}")
+            )
+    return tracked_metrics
+
+
+def run_query(q, q_args=None):
+    """run query of database"""
+    try:
+        with psycopg2.connect(
+            PSYCOPG2_CONNECTION_STR,
+        ) as conn:
+            with conn.cursor() as curr:
+                curr.execute(q, q_args)
+                if curr.description is not None:
+                    return curr.fetchall()
+
+                return None
+
+    except Exception as e:
+        print(f"query: {q}")
+        traceback.print_exc()
+        raise e
 
 
 def truncate_evidently_table():
-    truncate_statement = """
-        truncate TABLE evidently_metrics;
-    """
-    with psycopg2.connect(
-        PSYCOPG2_CONNECTION_STR,
-    ) as conn:
-        with conn.cursor() as curr:
-            curr.execute(truncate_statement)
+    run_query("truncate TABLE evidently_metrics;")
 
 
-def create_evidently_table():
+def drop_evidently_table():
+    run_query("drop TABLE if exists evidently_metrics;")
+
+
+def create_evidently_table(metrics: Dict[str, Union[int, float]]):
     create_table_statement = """
-        drop table if exists evidently_metrics;
         CREATE TABLE if not exists evidently_metrics(
             timestamp timestamp,
-            temperature_drift float,
-            humidity_drift float,
-            eCO2_drift float,
-            num_drifted_columns integer,
-            share_of_drifted_columns integer
+            {columns}
         );
     """
+    columns_str = ""
+    for col, value in metrics.items():
+        # print(col, value)
+        col_type = ""
+        if isinstance(value, int):
+            col_type = "integer"
+        elif isinstance(value, float):
+            col_type = "float"
+        else:
+            raise NotImplementedError(
+                "unsupported value type for"
+                f" column: {col}, value: {value},type: {type(value)}"
+            )
 
-    with psycopg2.connect(
-        PSYCOPG2_CONNECTION_STR,
-    ) as conn:
-        with conn.cursor() as curr:
-            curr.execute(create_table_statement)
+        columns_str += f'"{col}" {col_type},\n'
+
+    # remove , form last column
+    columns_str = columns_str[:-2]
+
+    run_query(create_table_statement.format(columns=columns_str))
 
 
 def log_evidently_metrics(metrics: Dict[str, Union[int, float]]):
 
     timestamp = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
+    create_evidently_table(metrics)
 
-    with psycopg2.connect(
-        PSYCOPG2_CONNECTION_STR,
-    ) as conn:
-        with conn.cursor() as curr:
-            curr.execute(
-                (
-                    "INSERT INTO evidently_metrics"
-                    "(timestamp, temperature_drift, humidity_drift, "
-                    "eCO2_drift, num_drifted_columns, share_of_drifted_columns)"
-                    "VALUES(%s, %s, %s, %s, %s, %s)"
-                ),
-                (
-                    timestamp,
-                    metrics['temperature_drift'],
-                    metrics['humidity_drift'],
-                    metrics['eCO2_drift'],
-                    metrics['num_drifted_columns'],
-                    metrics['share_of_drifted_columns'],
-                ),
-            )
+    insert_statement = """INSERT INTO evidently_metrics
+        ({columns})
+        VALUES({placeholders})
+    """
+
+    columns = []
+    columns.extend(list(metrics.keys()))
+
+    query_args = []
+    for col in columns:
+        query_args.append(metrics[col])
+
+    columns.append("timestamp")
+    query_args.append(timestamp)
+
+    columns_str = ", ".join([f'"{col}"' for col in columns])
+
+    run_query(
+        insert_statement.format(
+            columns=columns_str, placeholders=", ".join(["%s" for _ in columns])
+        ),
+        query_args,
+    )
 
 
-create_evidently_table()
+drop_evidently_table()
 
 if __name__ == "__main__":
     model = Model.from_model_dir(MODEL_DIR)
