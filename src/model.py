@@ -18,9 +18,6 @@ from constants import (
     MLFLOW_EXPERIMENT_NAME,
 )
 
-mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
-
 
 class Model:
     """
@@ -73,7 +70,7 @@ class Model:
             raise TypeError(
                 (
                     f"Unsupported datatype: {type(data)}, "
-                    "passing data with either type: [np.ndarray, pd.DataFrame]"
+                    "expected np.ndarray or pd.DataFrame"
                 )
             )
 
@@ -100,8 +97,14 @@ class Model:
             )
 
 
-def model_training_pipeline():
+def model_training_pipeline(
+    model_dir: str = MODEL_DIR,
+    mlflow_tracking_uri: str = MLFLOW_TRACKING_URI,
+    mlflow_experiment_name: str = MLFLOW_EXPERIMENT_NAME,
+):
     print("\nRunning model training pipeline:")
+    mlflow.set_tracking_uri(mlflow_tracking_uri)
+    mlflow.set_experiment(mlflow_experiment_name)
     # mlflow.autolog(True)
     with mlflow.start_run():
 
@@ -143,12 +146,10 @@ def model_training_pipeline():
         mlflow.log_artifacts(local_dir=MODEL_DIR, artifact_path="model")
 
 
-def evaluate_model_pipeline():
+def evaluate_model_pipeline(model_dir: str = MODEL_DIR):
     print("\nRunning evaluate model pipeline:")
-
     df = read_dataset()
-
-    model = Model.from_model_dir(MODEL_DIR)
+    model = Model.from_model_dir(model_dir)
 
     X, y = prepare_data(df=df, numeric_cols=model.numeric_cols, target=model.target)
     X_train, X_val, y_train, y_val = split_data(X, y, test_size=0.2, random_state=SEED)
@@ -160,7 +161,7 @@ def evaluate_model_pipeline():
     print(f"Validation Accuracy: {score:.4f}")
 
 
-def test_predict():
+def test_predict(model_dir: str = MODEL_DIR):
     # pylint: disable-all
     example_X_np = np.array(
         [
@@ -177,7 +178,7 @@ def test_predict():
     # adding extra columns
     example_X_pd["extra"] = ["a", "b", "c"]
 
-    model = Model.from_model_dir(MODEL_DIR)
+    model = Model.from_model_dir(model_dir)
     print(model.predict(example_X_np))
     print(model.predict(example_X_pd))
 

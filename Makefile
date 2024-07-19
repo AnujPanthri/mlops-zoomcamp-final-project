@@ -52,3 +52,6 @@ local-work-pool-worker:
 	export AWS_ACCESS_KEY_ID=access_key_id; \
 	export AWS_SECRET_ACCESS_KEY=secret_access_key; \
 	prefect worker start --pool local-pool;
+
+test:
+	pytest tests/

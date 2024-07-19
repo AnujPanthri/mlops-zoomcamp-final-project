@@ -154,6 +154,19 @@ def calculate_metrics(
     return tracked_metrics
 
 
+def py_type_to_db_type(value):
+    if isinstance(value, int):
+        col_type = "integer"
+    elif isinstance(value, float):
+        col_type = "float"
+    else:
+        raise NotImplementedError(
+            "unsupported type for " f"value: {value}, type: {type(value)}"
+        )
+
+    return col_type
+
+
 def run_query(q, q_args=None):
     """run query of database"""
     try:
@@ -181,6 +194,35 @@ def drop_evidently_table():
     run_query("drop TABLE if exists evidently_metrics;")
 
 
+def get_evidently_table_columns():
+    columns = run_query(
+        """
+              SELECT COLUMN_NAME from information_schema.columns
+              WHERE table_name = 'evidently_metrics'
+
+              """
+    )
+    columns = [value[0] for value in columns]
+    return columns
+
+
+def add_missing_columns_to_evidently_table(add_columns, column_values):
+    assert len(add_columns) == len(column_values)
+    print(f"adding missing columns: {add_columns}")
+    query = """
+        ALTER TABLE IF EXISTS evidently_metrics
+        {add_columns}
+    """
+    add_columns_str = ", ".join(
+        [
+            (f"ADD COLUMN {add_columns[i]} " f"{py_type_to_db_type(column_values[i])}")
+            for i in range(len(add_columns))
+        ]
+    )
+
+    run_query(query.format(add_columns=add_columns_str))
+
+
 def create_evidently_table(metrics: Dict[str, Union[int, float]]):
     create_table_statement = """
         CREATE TABLE if not exists evidently_metrics(
@@ -191,16 +233,7 @@ def create_evidently_table(metrics: Dict[str, Union[int, float]]):
     columns_str = ""
     for col, value in metrics.items():
         # print(col, value)
-        col_type = ""
-        if isinstance(value, int):
-            col_type = "integer"
-        elif isinstance(value, float):
-            col_type = "float"
-        else:
-            raise NotImplementedError(
-                "unsupported value type for"
-                f" column: {col}, value: {value},type: {type(value)}"
-            )
+        col_type = py_type_to_db_type(value)
 
         columns_str += f'"{col}" {col_type},\n'
 
@@ -210,10 +243,28 @@ def create_evidently_table(metrics: Dict[str, Union[int, float]]):
     run_query(create_table_statement.format(columns=columns_str))
 
 
+def refresh_evidently_table_schema(metrics):
+    # check if columns are changed
+    columns = get_evidently_table_columns()
+    if len(columns) == 0:
+        create_evidently_table(metrics)
+    else:
+        data_columns = list(metrics.keys())
+        missing_columns = list(set(data_columns) - set(columns))
+
+        if len(missing_columns) > 0:
+            missing_columns_values = [metrics[col] for col in missing_columns]
+            add_missing_columns_to_evidently_table(
+                missing_columns,
+                missing_columns_values,
+            )
+
+
 def log_evidently_metrics(metrics: Dict[str, Union[int, float]]):
 
+    refresh_evidently_table_schema(metrics)
+
     timestamp = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
-    create_evidently_table(metrics)
 
     insert_statement = """INSERT INTO evidently_metrics
         ({columns})
@@ -240,16 +291,16 @@ def log_evidently_metrics(metrics: Dict[str, Union[int, float]]):
     )
 
 
-drop_evidently_table()
-
 if __name__ == "__main__":
     model = Model.from_model_dir(MODEL_DIR)
     save_reference_df(model)
     reference_df = load_reference_df()
+
     metrics = calculate_metrics(
         reference_df,
         reference_df,
         model,
     )
 
+    drop_evidently_table()
     log_evidently_metrics(metrics)

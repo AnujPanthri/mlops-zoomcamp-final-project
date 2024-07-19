@@ -18,7 +18,10 @@ So given the informations from the different sensors found in an smoke detector 
 - [X] using workflow orchestrator(Prefect) to manage the training pipeline
 - [X] model deployment
 - [X] model monitoring
-- [ ] writing unit tests and integration tests
+- [X] write unit tests
+- [ ] write integration tests
+- [ ] add github action to run unit tests
+- [ ] add github action to run integration tests
 
 ## Setup Dependencies
 install **python 3.11** if not installed

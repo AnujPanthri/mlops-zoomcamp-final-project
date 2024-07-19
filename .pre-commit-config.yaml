@@ -31,14 +31,14 @@ repos:
         "--recursive=y" # to run on all python files
       ]
 
-# - repo: local
-#   hooks:
-#     - id: pytest-check
-#       name: pytest-check
-#       entry: pytest
-#       language: system
-#       pass_filenames: false
-#       always_run: true
-#       args: [
-#         "tests/",
-#       ]
+- repo: local
+  hooks:
+    - id: pytest-check
+      name: pytest-check
+      entry: pytest
+      language: system
+      pass_filenames: false
+      always_run: true
+      args: [
+        "tests/",
+      ]
