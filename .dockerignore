@@ -3,3 +3,8 @@ dockerfiles/
 infrastructure/
 notebooks/
 persistence/
+tests/x
+integration-tests/
+.env
+
+!integration-tests/model

@@ -19,7 +19,7 @@ So given the informations from the different sensors found in an smoke detector 
 - [X] model deployment
 - [X] model monitoring
 - [X] write unit tests
-- [ ] write integration tests
+- [X] write integration tests
 - [ ] add github action to run unit tests
 - [ ] add github action to run integration tests
 
@@ -94,6 +94,11 @@ python -m src.mlflow_register_model
 
 ## Model Deployment
 I am using flask to serve the model, which is read from the model registry of mlflow. Model version is configurable via ```MLFLOW_MODEL_VERSION``` environment variable.
+
+you can set the model version before running the deployment scripts example":-
+```bash
+export MLFLOW_MODEL_VERSION="1"
+```
 
 for deploying in current environment
 ```bash

@@ -2,17 +2,14 @@
 
 import os
 
-import boto3
 import requests
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
-from mlflow.client import MlflowClient
 from flask import Flask, jsonify, request, render_template
 
 from src.model import Model
-from src.s3_utils import download_s3_folder
-from constants import MODEL_DIR, MLFLOW_MODEL_NAME, MLFLOW_TRACKING_URI
+from constants import MODEL_DIR
 from monitoring.log_evidently_metrics import (
     get_evidently_df,
     calculate_metrics,
@@ -27,23 +24,8 @@ HOST = "0.0.0.0"
 PORT = 8080
 temperature_col, humidity_col, eco2_col = "Temperature[C]", "Humidity[%]", "eCO2[ppm]"
 
-
-def download_mlflow_model():
-    mlflow_model_version = os.getenv("MLFLOW_MODEL_VERSION", "2")
-    mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI", MLFLOW_TRACKING_URI)
-
-    print(f"USING mlflow_model_version: {mlflow_model_version}")
-    # print(mlflow_tracking_uri)
-    # print(MLFLOW_MODEL_NAME, mlflow_model_version)
-    client = MlflowClient(mlflow_tracking_uri)
-    mlflow_model = client.get_model_version(MLFLOW_MODEL_NAME, mlflow_model_version)
-    s3_resource = boto3.resource("s3")
-
-    download_s3_folder(
-        s3_resource,
-        s3_path=mlflow_model.source,
-        local_dir=MODEL_DIR,
-    )
+model_dir = os.getenv("MODEL_DIR", MODEL_DIR)
+LOG_TO_DB_FLAG = os.getenv("LOG_TO_DB_FLAG", "true").lower() == "true"
 
 
 def is_numeric(value: int | float):
@@ -71,8 +53,7 @@ def create_app():
 
     app = Flask(__name__)
 
-    download_mlflow_model()
-    model = Model.from_model_dir(MODEL_DIR)
+    model = Model.from_model_dir(model_dir)
 
     save_reference_df(model)
     reference_df = load_reference_df()
@@ -151,10 +132,11 @@ def create_app():
 
         y_pred = model.predict(data_df)
 
-        # log evidently metrics
-        current_df = get_evidently_df(data_df, y_pred)
-        metrics = calculate_metrics(reference_df, current_df, model)
-        log_evidently_metrics(metrics)
+        if LOG_TO_DB_FLAG:
+            # log evidently metrics
+            current_df = get_evidently_df(data_df, y_pred)
+            metrics = calculate_metrics(reference_df, current_df, model)
+            log_evidently_metrics(metrics)
 
         return jsonify(y_pred.tolist())
 

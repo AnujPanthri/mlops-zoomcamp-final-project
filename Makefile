@@ -1,5 +1,4 @@
 s3_bucket_name := $(shell cd infrastructure/ && tflocal output -raw model_bucket_name)
-
 install:
 	pip install pipenv
 	pipenv install --dev
@@ -15,16 +14,22 @@ quality-checks:
 start-infra:
 	docker compose up localstack --build -d
 
-create-infra:
+create-infra: start-infra
+
+	@if [ "$(auto-approve)" = "yes" ]; then \
+		auto_approve_statement="-auto-approve"; \
+	else \
+		auto_approve_statement=""; \
+	fi; \
 	cd infrastructure; \
 	tflocal init; \
-	tflocal apply -var-file="vars/local.tfvars";
+	tflocal apply -var-file="vars/local.tfvars" $${auto_approve_statement};
 
 # destroy-infra:
 # 	cd infrastructure; \
 # 	tflocal destroy;
 
-start-services:
+start-services: create-infra
 	export S3_BUCKET_URL="s3://${s3_bucket_name}"; \
 	echo "this is the s3_bucket url: $${S3_BUCKET_URL}"; \
 	docker compose up db mlflow prefect grafana --build -d
@@ -34,6 +39,8 @@ dev-deploy:
 	export AWS_ENDPOINT_URL=http://localhost:4566; \
 	export AWS_ACCESS_KEY_ID=access_key_id; \
 	export AWS_SECRET_ACCESS_KEY=secret_access_key; \
+	export MODEL_DIR=artifacts/deployment/model/; \
+	python -m deployment.download_model; \
 	python -m deployment.main
 
 deploy:
@@ -55,3 +62,6 @@ local-work-pool-worker:
 
 test:
 	pytest tests/
+
+integration-test:
+	./integration-tests/run.sh
