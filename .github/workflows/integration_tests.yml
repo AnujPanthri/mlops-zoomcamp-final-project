@@ -28,4 +28,5 @@ jobs:
           pipenv install --dev
       - name: running unit tests
         run: |
-          pipenv run make integration-test
+          pipenv shell
+          make integration-test

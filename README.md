@@ -1,5 +1,6 @@
 # Smoke Detector
 [![Unit tests](https://github.com/AnujPanthri/mlops-zoomcamp-final-project/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/AnujPanthri/mlops-zoomcamp-final-project/actions/workflows/unit_tests.yml)
+[![Integration Tests](https://github.com/AnujPanthri/mlops-zoomcamp-final-project/actions/workflows/integration_tests.yml/badge.svg)](https://github.com/AnujPanthri/mlops-zoomcamp-final-project/actions/workflows/integration_tests.yml)
 
 this is an project for final project submission of the DataTalksClub MLOps ZoomCamp 2024.
 
