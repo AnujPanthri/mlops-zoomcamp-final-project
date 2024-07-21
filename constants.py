@@ -13,3 +13,4 @@ MLFLOW_MODEL_NAME = "smoke-detection-model"
 BUCKET_NAME = "smoke-detector-model-bucket"
 SEED = 565
 TEST_SIZE = 0.2
+DEPLOYMENT_MODEL_DIR = ARTIFACT_DIR / "deployment/model/"

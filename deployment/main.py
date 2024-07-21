@@ -1,15 +1,14 @@
 # pylint: disable=line-too-long
 
-import os
-
 import requests
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, render_template
 
+from utils import getenv
 from src.model import Model
-from constants import MODEL_DIR
+from constants import DEPLOYMENT_MODEL_DIR
 from monitoring.log_evidently_metrics import (
     get_evidently_df,
     calculate_metrics,
@@ -24,8 +23,8 @@ HOST = "0.0.0.0"
 PORT = 8080
 temperature_col, humidity_col, eco2_col = "Temperature[C]", "Humidity[%]", "eCO2[ppm]"
 
-model_dir = os.getenv("MODEL_DIR", MODEL_DIR)
-LOG_TO_DB_FLAG = os.getenv("LOG_TO_DB_FLAG", "true").lower() == "true"
+model_dir = getenv("MODEL_DIR", DEPLOYMENT_MODEL_DIR)
+LOG_TO_DB_FLAG = getenv("LOG_TO_DB_FLAG", "true").lower() == "true"
 
 
 def is_numeric(value: int | float):

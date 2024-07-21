@@ -92,9 +92,9 @@ services:
       dockerfile: ./deployment/Dockerfile
       network: host
       args:
-        - MLFLOW_MODEL_VERSION=${MLFLOW_MODEL_VERSION:-1}
+        - MLFLOW_MODEL_VERSION=${MLFLOW_MODEL_VERSION}
         - MLFLOW_TRACKING_URI=http://localhost:5000/
-        - MODEL_DIR=${MODEL_DIR:-artifacts/deployment/model/}
+        - MODEL_DIR=${MODEL_DIR}
         - DOWLOAD_MODEL_FLAG=${DOWLOAD_MODEL_FLAG:-true}
         - AWS_REGION=us-east-1
         - AWS_ENDPOINT_URL=http://localhost:4566
@@ -113,9 +113,9 @@ services:
     networks:
       - common-network
     environment:
-      - MODEL_DIR=${MODEL_DIR:-artifacts/deployment/model/}
+      - MODEL_DIR=${MODEL_DIR}
       - DB_HOST=db
-      - LOG_TO_DB_FLAG=${LOG_TO_DB_FLAG:-true}
+      - LOG_TO_DB_FLAG=${LOG_TO_DB_FLAG}
     mem_limit: 1g
   #####################################################
   # Monitoring using Grafana

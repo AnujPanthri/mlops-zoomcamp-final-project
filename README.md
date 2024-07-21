@@ -172,3 +172,44 @@ make test
 ```bash
 make integration-test
 ```
+
+
+## Remove Containers :-
+### Remove all Containers :-
+```bash
+docker compose down
+```
+
+### Remove selected Containers :-
+```bash
+docker compose down {services names space seperated}
+```
+
+example to remove localstack and postgres containers:-
+```bash
+docker compose down localstack db
+```
+
+## Docker Hub
+
+I have also push one container to docker hub you can [check it out](https://hub.docker.com/r/anujpanthri/smoke-detector).
+
+### To run in interactive mode:-
+```bash
+docker run --name smoke-detector -p 8080:8080 -e LOG_TO_DB_FLAG=false --rm -it anujpanthri/smoke-detector
+```
+### To run in detached mode:-
+```bash
+docker run --name smoke-detector -p 8080:8080 -e LOG_TO_DB_FLAG=false -d anujpanthri/smoke-detector
+```
+### To remove container:-
+```bash
+docker stop smoke-detector
+docker rm smoke-detector
+```
+### To remove container forcefully:-
+```bash
+docker rm smoke-detector --force
+```
+
+## Screenshots

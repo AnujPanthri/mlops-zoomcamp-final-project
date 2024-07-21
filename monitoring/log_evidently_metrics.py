@@ -11,6 +11,7 @@ from evidently import ColumnMapping
 from evidently.report import Report
 from evidently.metrics import ColumnDriftMetric, DatasetDriftMetric
 
+from utils import getenv
 from src.model import Model
 from src.prepare_dataset import split_data, prepare_data, read_dataset
 from constants import SEED, MODEL_DIR, TEST_SIZE, MONITORING_ARTIFACT_DIR
@@ -18,7 +19,7 @@ from constants import SEED, MODEL_DIR, TEST_SIZE, MONITORING_ARTIFACT_DIR
 os.makedirs(MONITORING_ARTIFACT_DIR, exist_ok=True)
 
 REFERENCE_DF_PATH = MONITORING_ARTIFACT_DIR / "reference.csv"
-DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_HOST = getenv("DB_HOST", "localhost")
 PSYCOPG2_CONNECTION_STR = (
     f"host={DB_HOST} port=5432 " "user=monitoring password=secret dbname=monitoring"
 )
