@@ -213,3 +213,7 @@ docker rm smoke-detector --force
 ```
 
 ## Screenshots
+![Screenshot 2024-07-21 212151](https://github.com/user-attachments/assets/3f88b011-ef21-45ba-a5e1-553561471431)
+![image](https://github.com/user-attachments/assets/eeedb12b-a48a-42e2-ae58-913e814656fe)
+![image](https://github.com/user-attachments/assets/18915ae6-4444-4c3d-8895-717214281981)
+
