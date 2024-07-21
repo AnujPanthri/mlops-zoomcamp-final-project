@@ -24,7 +24,8 @@ jobs:
           exec "$SHELL"
       - name: setup environment
         run: |
-          pip install requests
+          pip install pipenv
+          pipenv lock
       - name: running integration tests
         run: |
           sudo chmod 777 ./integration-tests/run.sh
