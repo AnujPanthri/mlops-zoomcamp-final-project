@@ -24,10 +24,8 @@ jobs:
           exec "$SHELL"
       - name: setup environment
         run: |
-          pip install pipenv
-          pipenv install --dev
-      - name: running unit tests
+          pip install requests
+      - name: running integration tests
         run: |
           sudo chmod 777 ./integration-tests/run.sh
-          pipenv shell
           make integration-test
