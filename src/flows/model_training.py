@@ -78,7 +78,6 @@ def train_simple_flow(numeric_cols):
         X_train, X_val, y_train, y_val = split_dataset_task(
             X=X,
             y=y,
-            seed=SEED,
         )
 
         logger.info(f"Training data shape(X,y): {X_train.shape}, {y_train.shape}")
