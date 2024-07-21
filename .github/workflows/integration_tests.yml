@@ -28,5 +28,6 @@ jobs:
           pipenv install --dev
       - name: running unit tests
         run: |
+          sudo chmod 777 ./integration-tests/run.sh
           pipenv shell
           make integration-test
