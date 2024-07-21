@@ -26,6 +26,9 @@ function check_service_heath(){
             sleep $interval
         fi
     done
+
+    docker compose logs
+    docker compose down
     exit 1
 }
 
