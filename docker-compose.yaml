@@ -15,7 +15,7 @@ services:
       - SERVICES=s3,sts,iam
     networks:
       - common-network
-
+    mem_limit: 1g
   db:
     image: postgres
     ports:
@@ -29,14 +29,13 @@ services:
       - POSTGRES_MULTIPLE_DATABASES= mlflow_db, prefect, monitoring
     networks:
       - common-network
-
     healthcheck:
       test: pg_isready -U mlflow_db -d mlflow_db
       start_period: 2s
       interval: 5s
       retries: 6
       timeout: 30s
-
+    mem_limit: 1g
   ####################################################
   # Experiment Tracking with MLflow
   ####################################################
@@ -62,6 +61,7 @@ services:
       - MLFLOW_DEFAULT_ARTIFACT_ROOT=${S3_BUCKET_URL}/mlflow-artifacts
 
     command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://mlflow_db:secret@db:5432/mlflow_db
+    mem_limit: 1g
   ####################################################
   # Orchestration with Prefect
   ####################################################
@@ -81,7 +81,7 @@ services:
       - ./dockerfiles/prefect_startup.sh:/prefect_startup.sh
     entrypoint:
     command: bash /prefect_startup.sh
-
+    mem_limit: 1g
 
   #####################################################
   # Deploying Model Prediction Service
@@ -90,9 +90,16 @@ services:
     build:
       context: ./
       dockerfile: ./deployment/Dockerfile
+      network: host
       args:
-        - MLFLOW_MODEL_VERSION=${MLFLOW_MODEL_VERSION}
-        - MLFLOW_TRACKING_URI=http://mlflow:5000/
+        - MLFLOW_MODEL_VERSION=${MLFLOW_MODEL_VERSION:-1}
+        - MLFLOW_TRACKING_URI=http://localhost:5000/
+        - MODEL_DIR=${MODEL_DIR:-artifacts/deployment/model/}
+        - DOWLOAD_MODEL_FLAG=${DOWLOAD_MODEL_FLAG:-true}
+        - AWS_REGION=us-east-1
+        - AWS_ENDPOINT_URL=http://localhost:4566
+        - AWS_ACCESS_KEY_ID=access_key_id
+        - AWS_SECRET_ACCESS_KEY=secret_access_key
     depends_on:
       localstack:
         condition: service_started
@@ -106,11 +113,10 @@ services:
     networks:
       - common-network
     environment:
+      - MODEL_DIR=${MODEL_DIR:-artifacts/deployment/model/}
       - DB_HOST=db
-      - AWS_REGION=us-east-1
-      - AWS_ENDPOINT_URL=http://localstack:4566
-      - AWS_ACCESS_KEY_ID=access_key_id
-      - AWS_SECRET_ACCESS_KEY=secret_access_key
+      - LOG_TO_DB_FLAG=${LOG_TO_DB_FLAG:-true}
+    mem_limit: 1g
   #####################################################
   # Monitoring using Grafana
   #####################################################
@@ -132,3 +138,4 @@ services:
       - ./monitoring/config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
       - ./monitoring/config/grafana_dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
       - ./monitoring/dashboards:/opt/grafana/dashboards
+    mem_limit: 1g

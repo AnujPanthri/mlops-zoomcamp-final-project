@@ -1,4 +1,12 @@
-FROM python:3.11-slim
+FROM python:3.11-slim as environment_setup
+
+COPY Pipfile Pipfile
+COPY Pipfile.lock Pipfile.lock
+
+RUN pip install pipenv
+RUN pipenv install --system --deploy
+
+FROM environment_setup as final_image
 
 COPY . /app
 
@@ -16,9 +24,18 @@ ENV MLFLOW_MODEL_VERSION $MLFLOW_MODEL_VERSION
 ARG MODEL_DIR
 ENV MODEL_DIR $MODEL_DIR
 
-RUN pip install pipenv
-RUN pipenv install --system --deploy
 
+ARG AWS_REGION
+ARG AWS_ENDPOINT_URL
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
+
+ENV AWS_REGION $AWS_REGION
+ENV AWS_ENDPOINT_URL $AWS_ENDPOINT_URL
+ENV AWS_ACCESS_KEY_ID $AWS_ACCESS_KEY_ID
+ENV AWS_SECRET_ACCESS_KEY $AWS_SECRET_ACCESS_KEY
+
+RUN echo $DOWLOAD_MODEL_FLAG && sleep 5;
 RUN python -m deployment.download_model
 
 EXPOSE 8080

@@ -92,6 +92,17 @@ open http://localhost:4200/deployments and run deployments.
 python -m src.mlflow_register_model
 ```
 
+## Testing
+### To Run Unit Tests
+```bash
+make test
+```
+
+### To run Integration Tests
+```bash
+make integration-test
+```
+
 ## Model Deployment
 I am using flask to serve the model, which is read from the model registry of mlflow. Model version is configurable via ```MLFLOW_MODEL_VERSION``` environment variable.
 
