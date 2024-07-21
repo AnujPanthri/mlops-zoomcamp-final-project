@@ -1,0 +1,31 @@
+name: Integration Tests
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  integration_testing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+          ref: main
+      - name: install pyenv
+        run: |
+          curl https://pyenv.run | bash
+          echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+          echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+          echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+          exec "$SHELL"
+      - name: setup environment
+        run: |
+          pip install pipenv
+          pipenv install --dev
+      - name: running unit tests
+        run: |
+          pipenv run make integration-test
