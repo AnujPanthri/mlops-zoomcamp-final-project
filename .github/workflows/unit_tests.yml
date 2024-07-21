@@ -15,12 +15,15 @@ jobs:
           fetch-depth: 0
           lfs: true
           ref: main
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.11
+      - name: install pyenv
+        run: |
+          curl https://pyenv.run | bash
+          echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+          echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+          echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+          exec "$SHELL"
       - name: setup environment
         run: make install
       - name: running unit tests
         run: |
-          make test
+          pipenv run make test
