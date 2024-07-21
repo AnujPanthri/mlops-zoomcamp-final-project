@@ -23,8 +23,8 @@ So given the informations from the different sensors found in an smoke detector 
 - [X] model monitoring
 - [X] write unit tests
 - [X] write integration tests
-- [ ] add github action to run unit tests
-- [ ] add github action to run integration tests
+- [X] add github action to run unit tests
+- [X] add github action to run integration tests
 
 ## Setup Dependencies
 install **python 3.11** if not installed
