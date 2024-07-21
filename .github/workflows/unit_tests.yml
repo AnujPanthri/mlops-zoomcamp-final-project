@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-    
+
 
 jobs:
   unit_testing:
@@ -23,7 +23,9 @@ jobs:
           echo 'eval "$(pyenv init -)"' >> ~/.bashrc
           exec "$SHELL"
       - name: setup environment
-        run: make install
+        run: |
+          pip install pipenv
+          pipenv install --dev
       - name: running unit tests
         run: |
           pipenv run make test

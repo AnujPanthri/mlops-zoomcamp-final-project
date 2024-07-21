@@ -7,3 +7,4 @@ artifacts/
 persistence/
 
 .env
+Pipfile.lock
