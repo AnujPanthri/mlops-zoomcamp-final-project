@@ -122,6 +122,9 @@ def create_app():
         if not isinstance(json_request_data, list):
             return jsonify({"error": "pass list of features"})
 
+        if len(json_request_data) == 0:
+            return jsonify({"error": "include at least one example"})
+
         if not is_valid_json_input(json_request_data, model.numeric_cols):
             return jsonify(
                 {"error": f"pass all the features including {model.numeric_cols}"}

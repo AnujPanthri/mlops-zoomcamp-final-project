@@ -48,7 +48,10 @@ exit_script
 check_service_heath
 exit_script
 
-python integration-tests/test_model.py
+python integration-tests/test_flask_valid.py
+exit_script
+
+python integration-tests/test_flask_invalid.py
 exit_script
 
 # finally close everything and exit

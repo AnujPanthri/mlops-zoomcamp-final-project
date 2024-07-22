@@ -77,7 +77,7 @@ I have used ```prefect``` instead of ```Mage``` as it seems more reliable to me.
 
 In prefect we use ```task``` and ```flow``` in place of ```block``` and ```pipeline``` in mage. And we need to deploy ```flow``` so that we can run them on a schedule.
 
-### Register deployments :-
+### deploy flows :-
 ```bash
 prefect deploy --all
 ```
@@ -89,7 +89,7 @@ we have made up an local process work pool which we are gonna use to run our dep
 make local-work-pool-worker
 ```
 
-### Run deployments from prefect ui :-
+### Run an deployed flow from prefect ui :-
 
 open http://localhost:4200/deployments and run deployments.
 Also you can see the progress of the run on prefect dashboard.
@@ -216,4 +216,3 @@ docker rm smoke-detector --force
 ![Screenshot 2024-07-21 212151](https://github.com/user-attachments/assets/3f88b011-ef21-45ba-a5e1-553561471431)
 ![image](https://github.com/user-attachments/assets/eeedb12b-a48a-42e2-ae58-913e814656fe)
 ![image](https://github.com/user-attachments/assets/18915ae6-4444-4c3d-8895-717214281981)
-
